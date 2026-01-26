@@ -88,10 +88,10 @@ for col in df.columns:
         y_col = col.replace('_x', '_y')
         
         color = player_color_map.get(player_id)
-        if color == 'red':
+        if color == 'cyan':
             home_cols_x.append(col)
             home_cols_y.append(y_col)
-        elif color == 'cyan':
+        elif color == 'red':
             away_cols_x.append(col)
             away_cols_y.append(y_col)
 
