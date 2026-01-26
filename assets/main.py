@@ -27,13 +27,12 @@ metadata_path = os.path.join(root_folder, 'data', 'Sample_Game_3_metadata.xml')
 tracking_path = os.path.join(root_folder, 'data', 'Sample_Game_3_tracking.txt')
 event_path = os.path.join(root_folder, 'data', 'Sample_Game_3_events.json')
 
-
+print("Carregando os dados.")
 
 dataset = metrica.load_tracking_epts(
     meta_data=metadata_path,
     raw_data=tracking_path,
-    coordinates="metrica",
-    limit= 1000
+    coordinates="metrica"
 )
 event_dataset = metrica.load_event(
     event_data = event_path,
@@ -55,7 +54,7 @@ else:
     time_gol = 500
     print('Nenhum gol encontrado')
     
-time_gol = 500
+
 
 
 
