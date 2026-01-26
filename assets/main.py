@@ -28,7 +28,7 @@ tracking_path = os.path.join(root_folder, 'data', 'Sample_Game_3_tracking.txt')
 event_path = os.path.join(root_folder, 'data', 'Sample_Game_3_events.json')
 
 
-print("Carregando dados...")
+
 dataset = metrica.load_tracking_epts(
     meta_data=metadata_path,
     raw_data=tracking_path,
