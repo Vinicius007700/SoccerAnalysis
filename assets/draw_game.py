@@ -44,8 +44,8 @@ class MatchAnimator:
                     
         self.fig, self.ax = self._plot_pitch()
         
-        self.scat_home = self.ax.scatter([],[], c='red', s=120, edgecolors='white', zorder=5, label='Casa')
-        self.scat_away = self.ax.scatter([],[], c='cyan', s=120, edgecolors='black', zorder=5, label='Fora')
+        self.scat_home = self.ax.scatter([],[], c='cyan', s=120, edgecolors='white', zorder=5, label='Casa')
+        self.scat_away = self.ax.scatter([],[], c='red', s=120, edgecolors='black', zorder=5, label='Fora')
         
         self.scat_ball = self.ax.scatter([],[], c='white', s=100, edgecolors='black', linewidth=1.5, zorder=10)
         self.home_texts = [self.ax.text(0, 0, '', color='white', fontweight='bold', ha='center', va='center', fontsize=8, zorder=6) for _ in range(len(self.home_cols_x))]
@@ -54,7 +54,9 @@ class MatchAnimator:
         self.title_text = self.ax.text(0.5, 1.02, "", transform=self.ax.transAxes, color='white', ha='center', fontsize=12)
         
     def update(self, frame_idx):
+        #Lê as coordenadas de todos para o determinado frame 
         row = self.df.iloc[frame_idx]
+        
         self._set_teams_on_board(row, self.home_cols_x, self.home_cols_y, self.scat_home, 
                            self.home_texts)
     
@@ -62,7 +64,7 @@ class MatchAnimator:
         self._set_teams_on_board(row, self.away_cols_x, self.away_cols_y, self.scat_away, 
                            self.away_texts)
             
-        # --- Bola ---
+        # Bola 
         self._set_ball_on_board(row)
         
         self.title_text.set_text(f"Frame {frame_idx}")
@@ -75,18 +77,23 @@ class MatchAnimator:
         t_x_raw = row[team_cols_x].values.astype(float)
         t_y_raw = row[team_cols_y].values.astype(float)
         
+        #os valores das pos do campo vem de 0 a 1, 
+        # sendo que o (0,0) é o meio para facilitar nossas contas
         t_x = (t_x_raw - 0.5) * field_l
         t_y = (t_y_raw - 0.5) * field_w
         
         scat_team.set_offsets(np.column_stack((t_x, t_y)))
+        
         for text, x, y, col_name in zip(team_texts, t_x, t_y, team_cols_x):
             if np.isnan(x) or np.isnan(y):
                 text.set_visible(False)
+                
             else:
                 text.set_visible(True)
                 text.set_position((x, y))
                 p_id = col_name.replace('_x', '')
                 text.set_text(str(self.player_jersey_map.get(p_id, '')))
+                
                 
             
     def _set_ball_on_board(self, row):
@@ -132,22 +139,22 @@ class MatchAnimator:
             pc = 'k'
         # ALL DIMENSIONS IN m
         border_dimen = (3,3) # include a border arround of the field of width 3m
-        meters_per_yard = 0.9144 # unit conversion from yards to meters
+        #meters_per_yard = 0.9144 # unit conversion from yards to meters
         half_pitch_length = field_dimen[0]/2. # length of half pitch
         half_pitch_width = field_dimen[1]/2. # width of half pitch
         signs = [-1,1] 
         # Soccer field dimensions typically defined in yards, so we need to convert to meters
-        goal_line_width = 8*meters_per_yard
-        box_width = 20*meters_per_yard
-        box_length = 6*meters_per_yard
-        area_width = 44*meters_per_yard
-        area_length = 18*meters_per_yard
-        penalty_spot = 12*meters_per_yard
-        corner_radius = 1*meters_per_yard
-        D_length = 8*meters_per_yard
-        D_radius = 10*meters_per_yard
-        D_pos = 12*meters_per_yard
-        centre_circle_radius = 10*meters_per_yard
+        goal_line_width = 8 #*meters_per_yard
+        box_width = 20 #*meters_per_yard
+        box_length = 6 #*meters_per_yard
+        area_width = 44 #*meters_per_yard
+        area_length = 18 #*meters_per_yard
+        penalty_spot = 12 #*meters_per_yard
+        corner_radius = 1 #*meters_per_yard
+        D_length = 8 #*meters_per_yard
+        D_radius = 10 #*meters_per_yard
+        D_pos = 12 #*meters_per_yard
+        centre_circle_radius = 10 #*meters_per_yard
         # plot half way line # center circle
         ax.plot([0,0],[-half_pitch_width,half_pitch_width],lc,linewidth=linewidth)
         ax.scatter(0.0,0.0,marker='o',facecolor=lc,linewidth=0,s=markersize)
