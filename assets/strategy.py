@@ -7,28 +7,29 @@ class Strategy:
     def __init__(self, dataset):
         self.dataset = dataset
         self.gk_ids = pl.findGoalkeeper(dataset)
-        
-    def getLines(self, row, team_cols_x, team_cols_y, mode = 'Defense' , tolerance = 8):
-        players_data = []
-        
-        for col_x, col_y in zip(team_cols_x, team_cols_y):
-            val_x = row[col_x]
-            val_y = row[col_y]
-            
-            if pd.isna(val_x) or pd.isna(val_y): continue
 
+    
+    def _getTeamPositions(self, row, team_cols_x, team_cols_y):
+        players_data = []
+        for col_x, col_y in zip(team_cols_x, team_cols_y):
+            x_m, y_m = pl.positionOnBoard(row[col_x], row[col_y])
+            
+            if x_m == y_m == None: continue
+            
             raw_id = col_x.replace('_x','')
             clean_id = raw_id.replace('Home_', '').replace('Away', '')
-                   
-            x_m = (val_x - 0.5) * field_l
-            y_m = (val_y - 0.5) * field_w
             if clean_id in self.gk_ids:
-                # se o goleiro está negativo, a nossa linha defensiva é na esquerda
-                defenders_right = True if x_m > 0 else False
-                               
+                team_defenders_right = True if x_m > 0 else False
                 continue
-            players_data.append({id: clean_id, 'x': x_m, 'y': y_m})
+            players_data.append({'id': clean_id, 'x': x_m, 'y': y_m})
+        
+        return players_data, team_defenders_right
+    
             
+
+    def getLines(self, row, team_cols_x, team_cols_y, mode = 'Defense' , tolerance = 8):        
+        players_data, defenders_right = self._getTeamPositions(row, team_cols_x, team_cols_y)
+                
         if not players_data: return [], []
         
         if mode == 'Defense' :
@@ -40,7 +41,21 @@ class Strategy:
     
         
         
-        return 
+        return
+    
+    def getBreakDefenseLine(self, row, attacker_cols_x, attacker_cols_y, defender_cols_x, defender_cols_y):
+        attackers_data, attackers_defender_right = self._getTeamPositions(row, attacker_cols_x, attacker_cols_y)
+        defenders_data, defenders_defender_right = self._getTeamPositions(row, defender_cols_x, defender_cols_y)
+        
+        if not attackers_data or not defenders_data: return [], []
+        
+        player_ball = pl.getPlayerBall(row, attackers_data + defenders_data)
+        
+        if player_ball == None: return [], []
+        
+        
+        
+        
                 
     def _getDefenseLines(self, players_data, defenders_right, tolerance):
         #nós vamos organizar os jogadores do time

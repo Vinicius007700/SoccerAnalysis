@@ -30,7 +30,8 @@ print("Carregando os dados.")
 dataset = metrica.load_tracking_epts(
     meta_data=metadata_path,
     raw_data=tracking_path,
-    coordinates="metrica"
+    coordinates="metrica",
+    limit = 1000
 )
 event_dataset = metrica.load_event(
     event_data = event_path,
@@ -51,6 +52,7 @@ if len(gols) > 0:
 else:
     time_gol = 500
     print('Nenhum gol encontrado')
+time_gol = 500
     
 
 
