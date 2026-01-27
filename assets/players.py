@@ -11,6 +11,6 @@ def getLastDefensor():
     return
 
 def isGoalkeeper(player):
-    if(str(player.position) == "Goalkeeper"):
+    if(str(player.starting_position) == "Goalkeeper"):
         return True
     return False

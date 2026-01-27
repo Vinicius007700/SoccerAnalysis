@@ -1,12 +1,8 @@
 import os
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from kloppy import metrica
-import numpy as np
 import draw_game as dg
-import players as pl
+
 
 
 
@@ -34,8 +30,7 @@ print("Carregando os dados.")
 dataset = metrica.load_tracking_epts(
     meta_data=metadata_path,
     raw_data=tracking_path,
-    coordinates="metrica",
-    limit = 1000
+    coordinates="metrica"
 )
 event_dataset = metrica.load_event(
     event_data = event_path,
@@ -57,7 +52,7 @@ else:
     time_gol = 500
     print('Nenhum gol encontrado')
     
-time_gol = 500
+
 
 
 
@@ -72,7 +67,7 @@ away_team = dataset.metadata.teams[1]
 df = dataset.to_df(engine="pandas")
 print(df.head())
 
-print(f'Encontrado o goleiro {pl.find_goalkeeper(dataset)}')
+
 
 # Criar listas com os nomes das colunas de cada time para acesso rápido
 
@@ -87,7 +82,8 @@ print(f'Encontrado o goleiro {pl.find_goalkeeper(dataset)}')
 
 
 ani = dg.MatchAnimator(dataset, event_dataset, home_team, away_team)
-my_ani = ani.runMatch(time_gol - 100, time_gol + 100)
+
+my_ani = ani.runMatch(time_gol - 1000, time_gol + 1000)
 
 
 

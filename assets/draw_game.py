@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import pandas as pd
+import strategy as st
 
 field_l = 106.0
 field_w = 68.0
@@ -11,6 +12,7 @@ class MatchAnimator:
     def __init__(self, dataset, events, home_team, away_team):
         self.df = dataset.to_df(engine="pandas")
         self.events_df = events.to_df(engine="pandas")
+        self.strategy = st.Strategy(dataset)
         
         self.home_cols_x = []
         self.home_cols_y = []
@@ -51,6 +53,12 @@ class MatchAnimator:
         self.home_texts = [self.ax.text(0, 0, '', color='white', fontweight='bold', ha='center', va='center', fontsize=8, zorder=6) for _ in range(len(self.home_cols_x))]
         self.away_texts = [self.ax.text(0, 0, '', color='black', fontweight='bold', ha='center', va='center', fontsize=8, zorder=6) for _ in range(len(self.away_cols_x))]
 
+        self.chain_defensor_home, = self.ax.plot([], [], color='cyan', linewidth=1, alpha=0.8)
+        self.chain_defensor_away, = self.ax.plot([], [], color='red', linewidth=1, alpha=0.8)
+        
+        self.chain_attacker_home, = self.ax.plot([], [], color='cyan', linewidth=1, alpha=0.8)
+        self.chain_attacker_away, = self.ax.plot([], [], color='red', linewidth=1, alpha=0.8)
+        
         self.title_text = self.ax.text(0.5, 1.02, "", transform=self.ax.transAxes, color='white', ha='center', fontsize=12)
         
     def update(self, frame_idx):
@@ -67,9 +75,32 @@ class MatchAnimator:
         # Bola 
         self._set_ball_on_board(row)
         
+        
+        #linha de defesa do time da casa
+        defensor_home_x, defensor_home_y = self.strategy.getLines(row, self.home_cols_x, self.home_cols_y, 'Defense')
+        self._plotDefensiveLine(defensor_home_x, defensor_home_y, self.chain_defensor_home)
+        
+        #linha de ataque do time da casa
+        attacker_home_x, attacker_home_y = self.strategy.getLines(row, self.home_cols_x, self.home_cols_y, 'Attack')
+        self._plotDefensiveLine(attacker_home_x, attacker_home_y, self.chain_attacker_home)
+        
+
+        
+        #linha de defesa do time visitante
+        defensor_away_x, defensor_away_y = self.strategy.getLines(row, self.away_cols_x, self.away_cols_y)
+        self._plotDefensiveLine(defensor_away_x, defensor_away_y, self.chain_defensor_away)
+        
+        attacker_away_x, attacker_away_y = self.strategy.getLines(row, self.away_cols_x, self.away_cols_y, 'Attack')
+        self._plotDefensiveLine(attacker_away_x, attacker_away_y, self.chain_attacker_away)
+        
         self.title_text.set_text(f"Frame {frame_idx}")
         
-        return self.scat_home, self.scat_away, self.scat_ball, self.title_text, *self.home_texts, *self.away_texts
+        
+        
+        return (self.scat_home, self.scat_away, self.scat_ball, 
+                self.title_text, self.chain_defensor_home, self.chain_defensor_away, 
+                self.chain_attacker_home, self.chain_attacker_away,*self.home_texts,
+                *self.away_texts)
     
     
     
@@ -109,7 +140,19 @@ class MatchAnimator:
                 b_x = (float(bx_val) - 0.5) * field_l
                 b_y = (float(by_val) - 0.5) * field_w
                 self.scat_ball.set_offsets(np.array([[b_x, b_y]]))
-        
+                
+    def _plotDefensiveLine(self, line_x, line_y, chain):
+        if line_x:
+            points = sorted(zip(line_x, line_y), key=lambda k: k[1])
+            hx_sorted, hy_sorted = zip(*points)
+            chain.set_data(hx_sorted, hy_sorted)
+    
+    def _plotAttackLine(self, line_x, line_y, chain):
+        if line_x:
+            points = sorted(zip(line_x, line_y), key=lambda k: k[1])
+            hx_sorted, hy_sorted = zip(*points)
+            chain.set_data(hx_sorted, hy_sorted)
+               
 
     def _plot_pitch(self, field_dimen = (106.0,68.0), field_color ='green', linewidth=2, markersize=20):
         """ plot_pitch
@@ -204,7 +247,7 @@ class MatchAnimator:
     def runMatch(self, start_frame, end_frame):
         return animation.FuncAnimation(
             self.fig, 
-            self.update, 
+            self.update,
             frames=range(start_frame, end_frame), 
             interval=40, 
             blit=True
