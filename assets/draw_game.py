@@ -23,12 +23,12 @@ class MatchAnimator:
         self.player_color_map = {}
         
         for player in home_team.players: 
-            self.player_color_map[player.player_id] = 'cyan'
-            self.player_jersey_map[player.player_id] = player.jersey_no
+            self.player_color_map[player.id] = 'cyan'
+            self.player_jersey_map[player.id] = player.jersey
 
         for player in away_team.players: 
-            self.player_color_map[player.player_id] = 'red'
-            self.player_jersey_map[player.player_id] = player.jersey_no
+            self.player_color_map[player.id] = 'red'
+            self.player_jersey_map[player.id] = player.jersey
         
         for col in self.df.columns:
             if '_x' in col and 'ball' not in col:

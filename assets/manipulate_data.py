@@ -15,4 +15,5 @@ def add_realtime_score_game(tracking, events, home_team_id):
         
 
 def get_frame(timestamp):
-    return int(FRAME * timestamp)
+    s = timestamp.total_seconds()
+    return int(FRAME * s)

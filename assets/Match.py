@@ -3,13 +3,16 @@ from kloppy import metrica
 import assets.manipulate_data as md
 import assets.Team as tm
 class Match:
-    def __init__(self):
-        self.match_name
-        self._load()
-
-        self.dataset, self.event_dataset = self._loadMatch()
+    def __init__(self, math_name, tracking_path, metadata_path, event_path):
+        self.match_name=  math_name
+    
+        self.dataset, self.event_dataset = self._loadMatch(tracking_path, metadata_path, event_path)
         self.home_team_id, self.away_team_id = self._setHomeVisitingTeam_id(self.dataset)
-        md.add_realtime_score_game(self.dataset, self.event_dataset, self.home_team_id)
+        self.tracking_df = self.dataset.to_df(engine='pandas')
+        self.events_df = self.event_dataset.to_df(engine='pandas')
+        
+        md.add_realtime_score_game(self.tracking_df, self.events_df, self.home_team_id)
+        
         
         self.finalhome_score, self.finalaway_score = self._getFinalResult()
 
@@ -19,19 +22,25 @@ class Match:
     
     def setTeam(self, team_id, side = 'Home'):
         kloppy_team_obj = None
-        for team in self.dataset.metada.teams:
+        for team in self.dataset.metadata.teams:
             if str(team.team_id) == team_id:
                 kloppy_team_obj = team
                 break
         if kloppy_team_obj == None:
             raise ValueError(f"Time com ID {team_id} não encontrado")
-
-        return tm.Team(kloppy_team_obj, self.dataset.columns, side)
+        
+        print(f"Time encontradao: {kloppy_team_obj}")
+        return tm.Team(kloppy_team_obj, self.tracking_df.columns, side)
     
     
-    def _getFinalResult(self,dataset):
-        score = dataset.metadata.score
-        return score.home_score, score.away_score
+    def _getFinalResult(self):
+        score = self.dataset.metadata.score
+        if score:
+            print(score)
+            return score.home, score.away
+    
+        print("Não foi encontrado o placar final")
+        return 0, 0
     
     def _setWinner(self):
         if self.finalhome_score > self.finalaway_score:
@@ -58,4 +67,15 @@ class Match:
         return dataset, event_dataset
     
     def _setHomeVisitingTeam_id(self, dataset):
-        return dataset.metadata.score.get('idLocalTeam'), dataset.metadata.score.get('idVisitingTeam')
+        score_attrs = getattr(dataset.metadata.score, 'attributes', {})
+    
+        home_id = score_attrs.get('idLocalTeam')
+        visit_id = score_attrs.get('idVisitingTeam')
+
+        # Se achou os IDs no XML, retorna eles
+        if home_id and visit_id:
+            return home_id, visit_id
+            
+        # FALLBACK: Se não tiver os atributos (ou o XML for diferente), usa o padrão da lista
+        print("Aviso: IDs não encontrados no Score. Usando ordem da lista de times.")
+        return dataset.metadata.teams[0].team_id, dataset.metadata.teams[1].team_id
