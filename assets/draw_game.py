@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import pandas as pd
-import strategy as st
+import assets.strategy as st
 
 field_l = 106.0
 field_w = 68.0
@@ -253,10 +253,7 @@ class MatchAnimator:
             blit=True
         )
 
-class Team():
-    def __init__(self):
-        pass
-        
+
         
     
 

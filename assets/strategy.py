@@ -1,4 +1,4 @@
-import players as pl
+import assets.players as pl
 import pandas as pd
 
 field_l = 106.0

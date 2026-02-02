@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 from kloppy import metrica
-import draw_game as dg
+import assets.draw_game as dg
 
 
 
@@ -20,10 +20,10 @@ def get_frame(timestamp):
 # 1. CARREGAR DADOS
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
-root_folder = os.path.dirname(current_folder)
-metadata_path = os.path.join(root_folder, 'data', 'Sample_Game_3_metadata.xml')
-tracking_path = os.path.join(root_folder, 'data', 'Sample_Game_3_tracking.txt')
-event_path = os.path.join(root_folder, 'data', 'Sample_Game_3_events.json')
+#root_folder = os.path.dirname(current_folder)
+metadata_path = os.path.join(current_folder, 'data', 'Sample_Game_3_metadata.xml')
+tracking_path = os.path.join(current_folder, 'data', 'Sample_Game_3_tracking.txt')
+event_path = os.path.join(current_folder, 'data', 'Sample_Game_3_events.json')
 
 print("Carregando os dados.")
 

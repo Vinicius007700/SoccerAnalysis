@@ -18,6 +18,7 @@ class  Player:
     
     def _setJersey(self, kloppy_player):
         return int(kloppy_player.jersey_no)
+    
     def _setCols(self, df_columns, id):
         return (df_columns.get(f'{id}_x'), 
                 df_columns.get(f'{id}_y'))
