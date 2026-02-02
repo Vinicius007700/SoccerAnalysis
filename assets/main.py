@@ -97,5 +97,11 @@ my_ani = ani.runMatch(time_gol - 1000, time_gol + 1000)
 # ani.save(output_file, writer='ffmpeg', fps=25)
 
 #print(f"Vídeo salvo em: {output_file}")
-plt.show()
-plt.close() # Fecha para não mostrar janela estática
+# plt.show()
+# plt.close() # Fecha para não mostrar janela estática
+
+# No main.py, logo após carregar o dataset
+print("Verificando atributos do primeiro jogador:")
+p1 = dataset.metadata.teams[0]
+print(f"Nome: {p1.name}")
+print(f"Atributos (Dicionário): {p1.team_id}")
