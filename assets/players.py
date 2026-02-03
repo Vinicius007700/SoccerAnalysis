@@ -26,7 +26,7 @@ def getPlayerBall(row, players_data, possesion_radius = 2.0):
     
     if pd.isna(ball_x) or pd.isna(ball_y):
         return
-    bx, by = positionOnBoard(ball_x, ball_y)
+    bx, by = ball_x, ball_y
     
     dist_min = possesion_radius
     closest_player = None

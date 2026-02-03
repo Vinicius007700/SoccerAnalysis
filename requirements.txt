@@ -2,3 +2,4 @@ kloppy==3.18.0
 matplotlib==3.10.8
 numpy==2.4.2
 pandas==3.0.0
+mplsoccer==1.6.1

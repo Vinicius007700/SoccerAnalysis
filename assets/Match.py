@@ -3,15 +3,16 @@ from kloppy import metrica
 import assets.manipulate_data as md
 import assets.Team as tm
 class Match:
-    def __init__(self, math_name, tracking_path, metadata_path, event_path):
+    def __init__(self, math_name, tracking_path, metadata_path, event_path, dimensions_field):
         self.match_name=  math_name
     
         self.dataset, self.event_dataset = self._loadMatch(tracking_path, metadata_path, event_path)
         self.home_team_id, self.away_team_id = self._setHomeVisitingTeam_id(self.dataset)
-        self.tracking_df = self.dataset.to_df(engine='pandas')
-        self.events_df = self.event_dataset.to_df(engine='pandas')
+        self.tracking_df, self.events_df = self.setDf(dimensions_field, self.dataset, self.event_dataset) 
         
         md.add_realtime_score_game(self.tracking_df, self.events_df, self.home_team_id)
+        
+        
         
         
         self.finalhome_score, self.finalaway_score = self._getFinalResult()
@@ -20,6 +21,21 @@ class Match:
         self.home_team = self.setTeam(self.home_team_id, 'Home')
         self.away_team = self.setTeam(self.away_team_id, 'Away')
     
+    def setDf(self, dimensions_field, dataset, event_dataset):
+        events_df =  event_dataset.to_df(engine = 'pandas')
+        tracking_df = dataset.to_df(engine = 'pandas')
+        cols_to_convert = [c for c in tracking_df.columns if c.endswith('_x') or c.endswith('_y')]
+        
+        for col in cols_to_convert:
+            if col.endswith('_x'):
+                tracking_df[col] = (tracking_df[col]) * dimensions_field[0]
+            elif col.endswith('_y'):
+                tracking_df[col] = (tracking_df[col]) * dimensions_field[1]
+                
+        return tracking_df, events_df
+                
+
+        
     def setTeam(self, team_id, side = 'Home'):
         kloppy_team_obj = None
         for team in self.dataset.metadata.teams:

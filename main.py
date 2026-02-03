@@ -6,17 +6,6 @@ import assets.draw_game as dg
 
 
 
-field_l = 106.0
-field_w = 68.0
-FPS = 25
-
-
-def get_frame(timestamp):
-    s = timestamp.total_seconds()
-    return int(s * FPS)
-
-
-
 # 1. CARREGAR DADOS
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
@@ -28,12 +17,13 @@ event_path = os.path.join(current_folder, 'data', 'Sample_Game_3_events.json')
 match = mtch.Match(math_name = 'Jogo_Teste', 
                    tracking_path = tracking_path,
                    metadata_path = metadata_path,
-                   event_path = event_path)
+                   event_path = event_path,
+                   dimensions_field=(105, 68))
 
 
 
 
-ani = dg.MatchAnimator(match.dataset, match.event_dataset, match.home_team, match.away_team)
+ani = dg.MatchAnimator(match)
 
 my_ani = ani.runMatch(500, 800)
 

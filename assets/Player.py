@@ -23,8 +23,6 @@ class  Player:
         """
         Procura nas colunas do DataFrame onde estão os dados deste jogador.
         """
-        # O padrão do Metrica/Kloppy geralmente é: "Home_11_x" ou "home_11_x"
-        # O self.id geralmente é apenas "11"
         
         # 1. Cria o padrão de busca seguro (Ex: "_11_x")
         # O underline (_) antes do ID é importante para não confundir ID 1 com 11
