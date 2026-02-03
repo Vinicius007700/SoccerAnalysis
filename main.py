@@ -25,7 +25,7 @@ match = mtch.Match(math_name = 'Jogo_Teste',
 
 ani = dg.MatchAnimator(match)
 
-my_ani = ani.runMatch(500, 800)
+my_ani = ani.runMatch(1000, 1500)
 
 
 

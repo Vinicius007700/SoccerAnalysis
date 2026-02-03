@@ -7,6 +7,7 @@ class Strategy:
     def __init__(self, dataset):
         self.dataset = dataset
         self.gk_ids = pl.findGoalkeeper(dataset)
+        print("Herança")
 
     
     def _getTeamPositions(self, row, team_cols_x, team_cols_y):
