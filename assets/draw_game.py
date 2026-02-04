@@ -149,7 +149,7 @@ class MatchAnimator:
         return (self.scat_home, self.scat_away, self.scat_ball, 
                 self.title_text, self.chain_defensor_home, self.chain_defensor_away, 
                 self.chain_attacker_home, self.chain_attacker_away, *self.home_texts,
-                *self.away_texts)
+                *self.away_texts, self.hull_home_patch)
     
     def _set_teams_on_board(self, row, team_cols_x, team_cols_y, scat_team, team_texts):
         t_x_raw = row[team_cols_x].values.astype(float)
