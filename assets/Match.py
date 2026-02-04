@@ -6,11 +6,11 @@ import numpy as np
 import assets.strategys.TeamStrategy as ts
 
 class Match:
-    def __init__(self, math_name, tracking_path, metadata_path, event_path, dimensions_field):
+    def __init__(self, math_name, tracking_path, metadata_path, event_path, dimensions_field, limit_frames = None):
         self.match_name = math_name
     
-        # 1. Carrega o jogo TODO (Tirei o limit=1000)
-        self.dataset, self.event_dataset = self._loadMatch(tracking_path, metadata_path, event_path)
+
+        self.dataset, self.event_dataset = self._loadMatch(tracking_path, metadata_path, event_path, limit_frames)
         
         
         self.home_team_id, self.away_team_id = self._setHomeVisitingTeam_id(self.dataset)
@@ -27,15 +27,15 @@ class Match:
         self.home_team = self.setTeam(self.home_team_id, 'Home')
         self.away_team = self.setTeam(self.away_team_id, 'Away')
         
-        # 4. Cria a Estratégia (ÚNICA para a partida, como conversamos)
-        self.strategy = ts.TeamStrategy(self.event_dataset) 
+        self.h_strategy = ts.TeamStrategy(self.event_dataset) 
+        
+        self.a_strategy = ts.TeamStrategy(self.event_dataset)
         
         # 5. Calcula a posse (Não atribua o resultado a variável nenhuma!)
         print("Calculando posse para o time da casa...")
-        self._distribute_possession_to_players(self.home_team, self.tracking_df)
-        
+        self.home_team.distribute_possession_to_players(self.tracking_df)
         print("Calculando posse para o time visitante...")
-        self._distribute_possession_to_players(self.away_team, self.tracking_df)
+        self.away_team.distribute_possession_to_players(self.tracking_df)
         
         self._calculate_global_possession_stats()
         
@@ -43,7 +43,7 @@ class Match:
         events_df = event_dataset.to_df(engine='pandas')
         tracking_df = dataset.to_df(engine='pandas')
         
-        # Converte tudo (incluindo a bola) para Metros (0 a 105)
+        #Converte tudo (incluindo a bola) para Metros (0 a 105)
         cols_to_convert = [c for c in tracking_df.columns if c.endswith('_x') or c.endswith('_y')]
         
         for col in cols_to_convert:
@@ -62,28 +62,26 @@ class Match:
             if not player.col_x or not player.col_y:
                 continue
 
-            # Calcula distância Euclidiana
+       
             dist = ((tracking_df[player.col_x] - bx)**2 + (tracking_df[player.col_y] - by)**2) ** 0.5
             
-            # DEBUG: Mostra a menor distância que esse jogador chegou da bola
-            # Se der sempre > 2.0, sabemos que a escala está errada
+          
             min_dist = dist.min()
-            # print(f"Jogador {player.jersey}: Menor dist = {min_dist:.2f}m") 
+        
             print(f"Jogador {player.jersey} chegou a {min_dist:.2f}m da bola.")
             
             is_close = dist < 2.0 
             
-            # ATENÇÃO: Use 'possession' (dois S) para bater com a classe Player
             player.possession_history = is_close.tolist()  
         print(player.possession_history)
         
-    def _loadMatch(self, tracking_path, metadata_path, event_path):
+    def _loadMatch(self, tracking_path, metadata_path, event_path, limit_frames=None):
         print("Loading the data...")
         dataset = metrica.load_tracking_epts(
             meta_data=metadata_path,
             raw_data=tracking_path,
             coordinates="metrica",
-            limit=2000  # <--- IMPORTANTE: None para carregar o jogo inteiro
+            limit = limit_frames
         )
         event_dataset = metrica.load_event(
             event_data=event_path,
@@ -92,7 +90,6 @@ class Match:
         )
         return dataset, event_dataset
     
-    # ... (Mantenha os outros métodos setTeam, _getFinalResult, etc iguais) ...
     def setTeam(self, team_id, side='Home'):
         kloppy_team_obj = None
         for team in self.dataset.metadata.teams:
@@ -119,53 +116,69 @@ class Match:
     
     def _calculate_global_possession_stats(self):
         """
-        Calcula a porcentagem de posse acumulada frame a frame para o jogo todo.
+        Calcula a posse de bola acumulada do jogo INTEIRO de uma vez só.
+        Usa NumPy Vectorizado (Instantâneo).
         """
-        print("Calculando estatísticas de porcentagem de posse...")
         
-        # 1. Recupera distâncias mínimas de cada time para a bola
-        # Vamos usar uma lógica vetorial rápida
-        bx, by = self.tracking_df['ball_x'].values, self.tracking_df['ball_y'].values
+       
+        bx = self.tracking_df['ball_x'].values
+        by = self.tracking_df['ball_y'].values
         
-        # Função auxiliar rápida para pegar a menor distância do time inteiro
-        def get_min_dist(team):
-            min_dists = np.full(len(self.tracking_df), np.inf) # Começa com infinito
-            for player in team.players:
-                if player.col_x and player.col_y:
-                    px = self.tracking_df[player.col_x].values
-                    py = self.tracking_df[player.col_y].values
-                    d = ((px - bx)**2 + (py - by)**2) ** 0.5
-                    min_dists = np.minimum(min_dists, d) # Mantém a menor distância encontrada
-            return min_dists
 
-        home_min_dist = get_min_dist(self.home_team)
-        away_min_dist = get_min_dist(self.away_team)
+        valid_frames_mask = ~np.isnan(bx) & ~np.isnan(by)
         
-        # 2. Determina quem tem a bola frame a frame (1=Home, 0=Away, NaN=Ninguém)
-        # Regra: Distância < 2m e menor que o adversário
-        raw_possession = np.full(len(self.tracking_df), np.nan)
+       
+        def get_team_min_distances_vectorized(team):
+            dists_list = []
+            
+            for player in team.players:
+                if not player.col_x or not player.col_y:
+                    continue
+                
+                px = self.tracking_df[player.col_x].values
+                py = self.tracking_df[player.col_y].values
+                
+                # CÁLCULO MÁGICO: Processa 100% dos frames em 1 linha
+                d = ((px - bx)**2 + (py - by)**2)**0.5
+                dists_list.append(d)
+            
+            if not dists_list:
+                return np.full(len(bx), np.inf)
+            
+            # Empilha e acha o mínimo por frame
+            all_dists = np.vstack(dists_list)
+            return np.nanmin(all_dists, axis=0)
+
+        # 2. Calcula as menores distâncias
+        dist_home = get_team_min_distances_vectorized(self.home_team)
+        dist_away = get_team_min_distances_vectorized(self.away_team)
         
-        home_has = (home_min_dist < 2.0) & (home_min_dist < away_min_dist)
-        away_has = (away_min_dist < 2.0) & (away_min_dist < home_min_dist)
+        # 3. Quem tem a bola? (Boolean Arrays)
+        home_has = (dist_home < 2.0) & (dist_home < dist_away) & valid_frames_mask
+        away_has = (dist_away < 2.0) & (dist_away < dist_home) & valid_frames_mask
         
-        raw_possession[home_has] = 1
-        raw_possession[away_has] = 0
+        # 4. ACUMULA (CUMSUM) - AQUI GERA O HISTÓRICO
+        home_counts = np.cumsum(home_has.astype(int))
+        away_counts = np.cumsum(away_has.astype(int))
+        total_valid = home_counts + away_counts
         
-        # 3. Calcula a soma acumulada (CUMSUM)
-        # Onde é True vira 1, onde é False vira 0. Somamos progressivamente.
-        home_counts = np.cumsum(home_has)
-        away_counts = np.cumsum(away_has)
-        total_valid_frames = home_counts + away_counts
+        # Evita divisão por zero
+        total_valid[total_valid == 0] = 1
         
-        # Evita divisão por zero nos primeiros frames
-        total_valid_frames[total_valid_frames == 0] = 1 
+        # 5. Salva nas Estratégias
+        n_frames = len(self.tracking_df)
         
-        # 4. Salva as porcentagens prontinhas (0 a 100)
-        self.home_pct_history = (home_counts / total_valid_frames) * 100
-        self.away_pct_history = (away_counts / total_valid_frames) * 100
+        # Porcentagem Acumulada
+        self.h_strategy.ball_possession = (home_counts / total_valid) * 100
+        self.a_strategy.ball_possession = (away_counts / total_valid) * 100
         
-        print("Estatísticas de posse calculadas!")
+        # Posse Instantânea (0, 1 ou NaN)
+        raw_poss = np.full(n_frames, np.nan)
+        raw_poss[home_has] = 1
+        raw_poss[away_has] = 0
+        self.h_strategy.instant_possession = raw_poss
+        
+        print(f"Cálculo pronto! Final do jogo: Casa {self.h_strategy.ball_possession[-1]:.1f}%")
 
     def _setHomeVisitingTeam_id(self, dataset):
-        # ... (seu código existente) ...
         return dataset.metadata.teams[0].team_id, dataset.metadata.teams[1].team_id

@@ -14,7 +14,6 @@ class  Player:
         
     def hasBall(self, frame_idx):
         if frame_idx < len(self.possession_history):
-            print("Tinha a bola")
             return self.possession_history[frame_idx]
         return False
     
@@ -31,24 +30,20 @@ class  Player:
             """
             Procura nas colunas do DataFrame onde estão os dados deste jogador.
             """
-            # 1. Limpa o ID para garantir que temos só o número (Ex: "3699")
+
             clean_id = ''.join(filter(str.isdigit, str(self.id)))
-            
-            # 2. Define o nome EXATO que esperamos encontrar (Baseado no seu print)
-            # Ex: Se ID é 3699, procuramos "P3699_x"
+          
             target_col_name = f"P{clean_id}_x"
             
             col_x = None
             col_y = None
             
-            # 3. Procura nas colunas
+           
             if target_col_name in df_columns:
-                # ACHOU! (Formato P3699_x)
                 col_x = target_col_name
                 col_y = target_col_name.replace('_x', '_y')
             else:
-                # Tenta o modo "desesperado" (Varredura por sufixo _3699_x)
-                # Caso algum dia o formato mude
+      
                 suffix_search = f"_{clean_id}_x"
                 for col in df_columns:
                     if str(col).endswith(suffix_search):
@@ -56,10 +51,8 @@ class  Player:
                         col_y = col.replace('_x', '_y')
                         break
             
-            # --- DEBUG ---
+           
             if col_x is None:
-                # Descomente para ver quem está falhando
-                # print(f"[AVISO] Colunas não encontradas para Jogador {self.id} (Busquei por: {target_col_name})")
                 return None, None
                 
             return col_x, col_y

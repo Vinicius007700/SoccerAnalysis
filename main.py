@@ -6,10 +6,7 @@ import assets.draw_game as dg
 
 
 
-# 1. CARREGAR DADOS
-
 current_folder = os.path.dirname(os.path.abspath(__file__))
-#root_folder = os.path.dirname(current_folder)
 metadata_path = os.path.join(current_folder, 'data', 'Sample_Game_3_metadata.xml')
 tracking_path = os.path.join(current_folder, 'data', 'Sample_Game_3_tracking.txt')
 event_path = os.path.join(current_folder, 'data', 'Sample_Game_3_events.json')
@@ -18,14 +15,15 @@ match = mtch.Match(math_name = 'Jogo_Teste',
                    tracking_path = tracking_path,
                    metadata_path = metadata_path,
                    event_path = event_path,
-                   dimensions_field=(105, 68))
+                   dimensions_field=(105, 68),
+                   limit_frames=None)
 
 
 
 
 ani = dg.MatchAnimator(match)
 
-my_ani = ani.runMatch(1000, 1500)
+my_ani = ani.runMatch(start_frame= None, end_frame= None)
 
 
 
