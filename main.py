@@ -16,14 +16,14 @@ match = mtch.Match(math_name = 'Jogo_Teste',
                    metadata_path = metadata_path,
                    event_path = event_path,
                    dimensions_field=(105, 68),
-                   limit_frames=2000)
+                   limit_frames=None)
 
 
 
 
 ani = dg.MatchAnimator(match)
 
-my_ani = ani.runMatch(start_frame= 1500, end_frame= 2000)
+my_ani = ani.runMatch(start_frame= None, end_frame= None)
 
 
 
@@ -32,9 +32,9 @@ my_ani = ani.runMatch(start_frame= 1500, end_frame= 2000)
 
 # # Salvar como MP4
 # output_file = os.path.join(current_folder, 'match_animation.mp4')
-# ani.save(output_file, writer='ffmpeg', fps=25)
+# my_ani.save(output_file, writer='ffmpeg', fps=25)
 
-#print(f"Vídeo salvo em: {output_file}")
+# print(f"Vídeo salvo em: {output_file}")
 plt.show()
 plt.close() # Fecha para não mostrar janela estática
 
