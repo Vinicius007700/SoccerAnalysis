@@ -64,7 +64,7 @@ class MatchAnimator:
         self.chain_attacker_home, = self.ax.plot([], [], color='cyan', linewidth=1, alpha=0.8)
         self.chain_attacker_away, = self.ax.plot([], [], color='red', linewidth=1, alpha=0.8)
         
-        self.title_text = self.ax.text(int(field_l/2), int(field_w + 1), "", 
+        self.title_text = self.ax.text(int(field_l/2), int(field_w + 2), "", 
             color='black', 
             ha='center', 
             va='center', 
@@ -91,8 +91,8 @@ class MatchAnimator:
                 # Calcula o Fecho Convexo
                 hull_data = self.pitch.convexhull(hx_clean, hy_clean)
                 
-                # Desenha no campo
-                # poly_list retorna uma lista de polígonos, pegamos o primeiro [0]
+                # Draw in field
+                # poly_list returns a list of polygons, but we know it will be 1
                 poly_list = self.pitch.polygon(hull_data, ax=self.ax, 
                                              edgecolor=color, facecolor=color, 
                                              alpha=0.2, linestyle='--', zorder=1)
@@ -140,10 +140,10 @@ class MatchAnimator:
             status = "<<" 
             
 
-        text_str = f"{pct_home:.1f}%  {status}  {pct_away:.1f}%"
+        text_str = f"Home team {pct_home:.1f}%  {status}  Away team {pct_away:.1f}%"
         
     
-        self.title_text.set_text(f"Frame {frame_idx} | Posse: {text_str}")
+        self.title_text.set_text(f"Time {int((frame_idx / FPS) / 60)}:{int((frame_idx / FPS) % 60):02d}  \n Ball Possession: {text_str}")
         self.title_text.set_color(color_text)
         
         return (self.scat_home, self.scat_away, self.scat_ball, 

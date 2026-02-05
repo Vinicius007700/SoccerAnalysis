@@ -16,14 +16,14 @@ match = mtch.Match(math_name = 'Jogo_Teste',
                    metadata_path = metadata_path,
                    event_path = event_path,
                    dimensions_field=(105, 68),
-                   limit_frames=None)
+                   limit_frames=2000)
 
 
 
 
 ani = dg.MatchAnimator(match)
 
-my_ani = ani.runMatch(start_frame= None, end_frame= None)
+my_ani = ani.runMatch(start_frame= 1500, end_frame= 2000)
 
 
 
